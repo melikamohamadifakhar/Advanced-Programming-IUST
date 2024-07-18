@@ -1,0 +1,168 @@
+@page "/TheJeans"
+@inject IJSRuntime JS
+@inject HttpClient Http
+@using P8.Shared
+@using System.Text.Json
+@using System.Text
+@inject NavigationManager NavigationManager
+@code {
+    public List<Clothe> _Jeans { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string URL = @"https://d99522086.herokuapp.com/api/Clothe/getClotheByCategory/Jeans";
+        _Jeans = await Http.GetFromJsonAsync<List<Clothe>>(URL);
+    }
+    public async Task AddToCart(Clothe clothe)
+    {
+        string URL = @"https://d99522086.herokuapp.com/api/Clothe/UpdateClotheFromDB";
+        clothe.Count -=1;
+        if (FinalList.ClothesList.Keys.Contains(clothe))
+        {
+            FinalList.ClothesList[clothe] +=1;
+            FinalList.TotalPrice += clothe.Price;
+        }
+        else
+        {
+            FinalList.ClothesList.Add(clothe, 1);
+            FinalList.TotalPrice += clothe.Price;
+        }
+        await Http.PutAsJsonAsync<Clothe>(URL, clothe);
+        @* await OnInitializedAsync(); *@
+    }
+    public async Task Delete(Clothe clothe){
+        int[] id = new int[]{clothe.Id};
+        string URL = @"https://d99522086.herokuapp.com/api/Clothe/RemoveClotheFromDB";
+        var request = new HttpRequestMessage(HttpMethod.Delete, URL);
+        request.Content = new StringContent(JsonSerializer.Serialize(id), Encoding.UTF8, "application/json");
+        await Http.SendAsync(request);
+        await OnInitializedAsync();
+    }
+    public async Task Update(Clothe clothe)
+    {
+        string URL = @"https://d99522086.herokuapp.com/api/Clothe/UpdateClotheFromDB";
+        await Http.PutAsJsonAsync<Clothe>(URL, new Clothe
+        {
+            Price = clothe.Price,
+            Name = clothe.Name,
+            Color = clothe.Color,
+            Category = clothe.Category,
+            Id = clothe.Id,
+            Count = clothe.Count,
+            Source = clothe.Source
+        });
+    }
+
+    public void Navigate()
+    {
+        NavigationManager.NavigateTo("/Cart");
+    }
+}
+
+
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+
+    td {
+        text-align: center;
+        vertical-align: middle;
+
+    }
+
+    th {
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .button3 {
+        background-color: white;
+        color: black;
+        border: 2px solid #f44336;
+        width: 100%;
+    }
+
+    .button3:hover {
+        background-color: #f44336;
+        color: white;
+    }
+
+    .button4 {
+        background-color: #b8b894;
+        color: black;
+        border: 2px black;
+        @*width:100%;*@
+    }
+
+    .button4:hover {
+        background-color: #6b6b47;
+        color: black;
+    }
+
+    h1 {
+        background-color: #1C0570;
+        color: white;
+        font-size: 30px;
+        width: 100%;
+    }
+</style>
+<h1>
+    <table style="width:100%">
+        <tr>
+            <th>Total Cost: @FinalList.TotalPrice</th>
+            <th>
+                <form method="GET" action="/Cart">
+                    <button class="button button4" style="display: inline;" @onclick=Navigate>End of purchase</button>
+                </form>
+            </th>
+        </tr>
+    </table>
+</h1>
+<table style="width:100%">
+    <tr>
+        <th>Count</th>
+        <th>Info</th>
+        <th>Add to cart</th>
+        <th>Delete</th>
+    </tr>
+    @if (_Jeans != null)
+    {
+        @foreach (var jeans in _Jeans)
+        {
+            <tr>
+            <td style="text-align:center">
+                @jeans.Count
+            </td>
+
+            <td>
+                <p>
+                    <img src=@jeans.Source alt="" style="width:50%;height:50%;" />
+                    <br>
+                    Name: @jeans.Name
+                    <br>
+                    Category: @jeans.Category
+                    <br>
+                    Price: @jeans.Price
+                    <br>
+                    Color: @jeans.Color
+                </p>
+            </td>
+            <td>
+                @if(jeans.Count==0 ){
+                    <button type="button" disabled>Add</button>
+                }
+                @if(jeans.Count != 0){
+                <button type="submit" class="button3" @onclick="() => AddToCart(jeans)">Add</button>
+                }
+            </td>
+            <td>
+                <button type="submit" class="button3" @onclick="() => Delete(jeans)">Delete</button>
+            
+            </td>
+            </tr>
+        }
+    }
+</table>

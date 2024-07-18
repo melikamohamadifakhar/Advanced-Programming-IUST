@@ -1,0 +1,166 @@
+@page "/TheSkirt"
+@inject IJSRuntime JS
+@inject HttpClient Http
+@using P8.Shared
+@using System.Text.Json
+@using System.Text
+@inject NavigationManager NavigationManager
+@code {
+    public List<Clothe> _Skirt { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string URL = @"https://d99522086.herokuapp.com/api/Clothe/getClotheByCategory/Skirt";
+        _Skirt = await Http.GetFromJsonAsync<List<Clothe>>(URL);
+    }
+    public async Task AddToCart(Clothe clothe)
+    {
+        string URL = @"https://d99522086.herokuapp.com/api/Clothe/UpdateClotheFromDB";
+        clothe.Count -=1;
+        if (FinalList.ClothesList.Keys.Contains(clothe))
+        {
+            FinalList.ClothesList.Keys.Where(arg => arg == clothe).Select(arg => arg.Count += 1);
+            FinalList.TotalPrice += clothe.Price;
+        }
+        else
+        {
+            FinalList.ClothesList[clothe] = 1;
+            FinalList.TotalPrice += clothe.Price;
+        }
+        await Http.PutAsJsonAsync<Clothe>(URL, clothe);
+        @* await OnInitializedAsync(); *@
+    }
+    public async Task Update(Clothe clothe)
+    {
+        string URL = @"https://d99522086.herokuapp.com/api/Clothe/UpdateClotheFromDB";
+        await Http.PutAsJsonAsync<Clothe>(URL, new Clothe
+        {
+            Price = clothe.Price,
+            Name = clothe.Name,
+            Color = clothe.Color,
+            Category = clothe.Category,
+            Id = clothe.Id,
+            Count = clothe.Count,
+            Source = clothe.Source
+        });
+    }
+    public async Task Delete(Clothe clothe){
+        int[] id = new int[]{clothe.Id};
+        string URL = @"https://d99522086.herokuapp.com/api/Clothe/RemoveClotheFromDB";
+        var request = new HttpRequestMessage(HttpMethod.Delete, URL);
+        request.Content = new StringContent(JsonSerializer.Serialize(id), Encoding.UTF8, "application/json");
+        await Http.SendAsync(request);
+        await OnInitializedAsync();
+    }
+    public void Navigate()
+    {
+        NavigationManager.NavigateTo("/Cart");
+    }
+}
+
+
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+
+    td {
+        text-align: center;
+        vertical-align: middle;
+
+    }
+
+    th {
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .button3 {
+        background-color: white;
+        color: black;
+        border: 2px solid #f44336;
+        width: 100%;
+    }
+
+    .button3:hover {
+        background-color: #f44336;
+        color: white;
+    }
+
+    .button4 {
+        background-color: #b8b894;
+        color: black;
+        border: 2px black;
+        @*width:100%;*@
+    }
+
+    .button4:hover {
+        background-color: #6b6b47;
+        color: black;
+    }
+
+    h1 {
+        background-color: #1C0570;
+        color: white;
+        font-size: 30px;
+        width: 100%;
+    }
+</style>
+<h1>
+    <table style="width:100%">
+        <tr>
+            <th>Total Cost: @FinalList.TotalPrice</th>
+            <th>
+                <form method="GET" action="/Cart">
+                    <button class="button button4" style="display: inline;" @onclick=Navigate>End of purchase</button>
+                </form>
+            </th>
+        </tr>
+    </table>
+</h1>
+<table style="width:100%">
+    <tr>
+        <th>Count</th>
+        <th>Info</th>
+        <th>Add to cart</th>
+        <th>Delete</th>
+    </tr>
+    @if (_Skirt != null)
+    {
+        @foreach (var Skirt in _Skirt)
+        {
+            <tr>
+            <td style="text-align:center">
+                @Skirt.Count
+            </td>
+
+            <td>
+                <p>
+                    <img src=@Skirt.Source alt="" style="width:50%;height:50%;" />
+                    <br>
+                    Name: @Skirt.Name
+                    <br>
+                    Category: @Skirt.Category
+                    <br>
+                    Price: @Skirt.Price
+                    <br>
+                    Color: @Skirt.Color
+                </p>
+            </td>
+            <td>
+                @if(Skirt.Count <=0 ){
+                    <button type="button" disabled>Add</button>
+                }
+                @if(Skirt.Count > 0){
+                <button type="submit" class="button3" @onclick="() => AddToCart(Skirt)">Add</button>
+                }
+            </td>
+            <td>
+                <button type="submit" class="button3" @onclick="() => Delete(Skirt)">Delete</button>
+            </td>
+            </tr>
+        }
+    }
+</table>

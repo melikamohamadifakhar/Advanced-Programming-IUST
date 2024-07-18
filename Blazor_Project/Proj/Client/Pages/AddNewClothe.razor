@@ -1,0 +1,89 @@
+@page "/addNewClotheDb"
+@using P8
+@using P8.Shared
+@inject HttpClient Http
+@inject NavigationManager UriHelper
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@using System;
+@code{
+    private Clothe clothe = new Clothe();
+    public async Task _AddNewClothe(){
+        string URL = @"https://d99522086.herokuapp.com/api/Clothe/AddNewClotheToDb";
+        await Http.PostAsJsonAsync<Clothe>(URL, clothe);
+        await JS.InvokeVoidAsync(
+        "alert",
+        $"Successfully added");  
+        System.Console.WriteLine("added");
+    }
+}
+
+<style>
+    .button {
+        background-color: #4CAF50; 
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        transition-duration: 0.4s;
+        cursor: pointer;
+        width: 100%;
+    }
+    .button2 {
+        background-color: white; 
+        color: black; 
+        border: 2px solid #008CBA;
+    }
+    .button2:hover {
+        background-color: #008CBA;
+        color: white;
+    }
+</style>
+
+<EditForm Model="@clothe" OnValidSubmit="@_AddNewClothe" >
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <table>
+    <tr>
+    <td><label for="Name">Name</label> </td>
+    <td><InputText id="Name" @bind-Value="clothe.Name" /></td>
+    </tr>
+    <br>
+    <tr>
+    <td ><label for="Price">Price</label></td>
+    <td><InputNumber id="Price" @bind-Value="clothe.Price" /></td>
+    </tr>
+    <br>
+    <tr>
+    <td><label for="Color">Color</label></td>
+    <td><InputText id="Color" @bind-Value="clothe.Color" /></td>
+    </tr>
+    <br>
+    <tr>
+    <td><label for="Category">Category</label></td>
+    <InputSelect id="Category" @bind-Value="clothe.Category" class="form-control">
+    <option value="other">other</option>
+    <option value="Dress">Dress</option>
+    <option value="Jeans">Jeans</option>
+    <option value="Skirt">Skirt</option>
+    </InputSelect>
+    </tr>
+    <br>
+    <tr>
+    <td><label for="Count">Count</label> </td>
+    <td><InputNumber id="Count" @bind-Value="clothe.Count" /></td>
+    </tr>
+    <br>
+    <tr>
+    <td><label for="Source">Image address</label> </td>
+    <td><InputText id="Source" @bind-Value="clothe.Source" /></td>
+    </tr>
+    <br>
+    <button type="submit" class="button button2">Submit</button>
+    </table>
+</EditForm>
+

@@ -1,0 +1,90 @@
+@page "/GetInfo"
+@inject NavigationManager NavigationManager
+@code{
+    private User U1 = new User();
+    private List<User> AllUsers = new List<User>();
+    public void done(){
+        NavigationManager.NavigateTo("/Done");
+        AddData();
+        FinalList.ClothesList.Clear();
+        FinalList.TotalPrice =0;
+    }
+    private void AddData(){
+        AllUsers.Add(U1);
+        U1 = new User();
+    }
+}
+
+<style>
+    .button {
+        background-color: #4CAF50; 
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        transition-duration: 0.4s;
+        cursor: pointer;
+        width: 100%;
+    }
+    .button2 {
+        background-color: white; 
+        color: black; 
+        border: 2px solid #008CBA;
+    }
+    .button2:hover {
+        background-color: #008CBA;
+        color: white;
+    }
+</style>
+<h1>
+    <table style="width:100%">
+        <tr>
+        <th>Total Cost: @FinalList.TotalPrice</th>
+        </tr>
+    </table>
+</h1>
+<br>
+<br>
+<EditForm Model="@U1" OnValidSubmit="@done" >
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <table>
+    <tr>
+    <td><label for="Name">Full Name</label> </td>
+    <td><InputText id="Name" @bind-Value="U1.Name" /></td>
+    </tr>
+    <br>
+    <tr>
+    <td ><label for="Age">Age</label></td>
+    <td><InputNumber for="Age" @bind-Value="U1.Age" /></td>
+    </tr>
+    <br>
+    <tr>
+    <td><label for="Email">Email Address</label></td>
+    <td><InputText for="Email" @bind-Value="U1.Email" /></td>
+    </tr>
+    <br>
+    <tr>
+    <td><label for="Address">Address</label></td>
+    <td><InputText for="Address" @bind-Value="U1.Address" /></td>
+    </tr>
+    <br>
+    <tr>
+    <td><label for="ZIP">ZIP Code</label> </td>
+    <td><InputNumber id="ZIP" @bind-Value="U1.ZIP" /></td>
+    </tr>
+    <br>
+    <tr>
+    <td><label for="AccountNumber">Account Number</label> </td>
+    <td><InputNumber id="AcNum" @bind-Value="U1.AccountNum" /></td>
+    </tr>
+    <br>
+    <br>
+    <button type="submit" class="button button2">Submit</button>
+    </table>
+</EditForm>
+
